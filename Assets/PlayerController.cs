@@ -5,13 +5,17 @@ using UnityEngine.Networking;
 
 public class PlayerController : NetworkBehaviour {
 
+	[SyncVar]
+	public int playerNumber;
+
 	public GameObject bulletPrefab;
 	public Transform bulletSpawn;
 	// Use this for initialization
-	void Start () {
-		
+
+	void Start ()
+	{
+
 	}
-	
 	// Update is called once per frame
 	void Update ()
 	{
@@ -26,7 +30,7 @@ public class PlayerController : NetworkBehaviour {
 		transform.Translate (0, y, 0);
 
 		if (Input.GetKeyDown (KeyCode.Space)) {
-			CmdFire();
+			CmdFire ();
 		}
 	}
 
@@ -43,6 +47,46 @@ public class PlayerController : NetworkBehaviour {
 
 	public override void OnStartLocalPlayer ()
 	{
-		GetComponent<MeshRenderer>().material.color = Color.blue;
+		CmdRequestPlayerNumber();
+	}
+
+	public override void OnStartClient () {
+		SetColor(playerNumber);
+	}
+
+	[ClientRpc]
+	void RpcPlayerNumberChanged (int newValue) {
+		SetColor(newValue);
+		print ("Player Numbed Changed");
+	}
+
+	void SetColor (int value)
+	{
+		GetComponent<MeshRenderer>().material.color = GetColorFor(value);
+	}
+
+	Color GetColorFor (int playerNumber)
+	{
+		switch (playerNumber) 
+		{
+			case 0:
+				return Color.red;
+				break;
+			case 1:
+				return Color.blue;
+				break;
+			case 2:
+				return Color.green;
+				break;
+			default: 
+				return Color.black;
+				break;
+		}
+	}
+
+	[Command]
+	void CmdRequestPlayerNumber () {
+		playerNumber = Random.Range(0,2);
+		RpcPlayerNumberChanged(playerNumber);
 	}
 }
