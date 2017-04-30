@@ -9,7 +9,7 @@ public class SegmentSpawner : NetworkBehaviour {
 	private float spawnTimer;
 	private float spawnInterval = 1f;
 	private int segmentCount = 0;
-	private int segmentCountMax = 10;
+	private int segmentCountMax = 100;
 	// Use this for initialization
 	void Start () {
 		spawnTimer = spawnInterval;

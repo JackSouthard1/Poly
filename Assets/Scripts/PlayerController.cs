@@ -147,17 +147,18 @@ public class PlayerController : NetworkBehaviour {
 
 	void SetupRendering ()
 	{
-		MeshRenderer mr = gameObject.GetComponent<MeshRenderer>();
+		MeshRenderer mr = gameObject.GetComponent<MeshRenderer> ();
 
 		gameObject.AddComponent (typeof(PolygonCollider2D));
 
 		// setup pool of sides in the sidesContainer
 		sidesGOArray = new GameObject[sidesCountMax];
 		for (var i = 0; i < sidesCountMax; i++) {
-			var newSide = Instantiate(sidePrefab, Vector3.zero, Quaternion.identity) as GameObject;
+			var newSide = Instantiate (sidePrefab, Vector3.zero, Quaternion.identity) as GameObject;
 			newSide.transform.parent = sidesContainer.transform;
-			newSide.SetActive(false);
-			sidesGOArray[i] = newSide;
+			newSide.SetActive (false);
+			newSide.GetComponent<SideController> ().index = i;
+			sidesGOArray [i] = newSide;
 		}
 	}
 
@@ -353,7 +354,55 @@ public class PlayerController : NetworkBehaviour {
 		CmdChangeSidesCount (sidesCount + sidesIncrement);
 	}
 
-	// HELPERS ******************************************8
+	// PARTS *********
+
+	public void OnPartHitSide (GameObject part, GameObject side)
+	{
+		if (isLocalPlayer) {
+			NetworkInstanceId partNetID = part.GetComponent<NetworkIdentity>().netId;
+			int sideIndex = side.GetComponent<SideController>().index;
+
+			CmdPartHitSide(partNetID, sideIndex);
+		}
+	}
+
+	[Command]
+	void CmdPartHitSide (NetworkInstanceId partNetID, int sideIndex)
+	{
+		AttachPartToSide(partNetID, sideIndex);
+		RpcAttachPartToSide (partNetID, sideIndex);
+	}
+
+	[ClientRpc]
+	void RpcAttachPartToSide (NetworkInstanceId partNetID, int sideIndex)
+	{
+		AttachPartToSide(partNetID, sideIndex);
+	}
+
+	void AttachPartToSide (NetworkInstanceId partNetID, int sideIndex)
+	{
+		GameObject part = GameObjectFromNetID(partNetID);
+		GameObject side = sidesGOArray[sideIndex];
+
+		part.GetComponent<PartController>().Attach(side);
+		print("Part Attached to Side: " + side);
+	}
+
+	// HELPERS ***************************************
+
+	GameObject GameObjectFromNetID (NetworkInstanceId netID)
+	{
+		GameObject gameObject;
+
+		if (GetComponent<NetworkIdentity>().isClient) {
+			gameObject = ClientScene.FindLocalObject (netID);
+		} else {
+			gameObject = NetworkServer.FindLocalObject (netID); 
+		}
+
+		return gameObject;
+
+	}
 
 	float PolyRadiusFromSidesCount(float otherAngle) {
 		return 1/(2 * Mathf.Sin(otherAngle * Mathf.Deg2Rad/2));

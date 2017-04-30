@@ -9,7 +9,7 @@ public class PartSpawner : NetworkBehaviour {
 	private float spawnTimer;
 	private float spawnInterval = 2f;
 	private int partCount = 0;
-	private int partCountMax = 5;
+	private int partCountMax = 500;
 	// Use this for initialization
 	void Start () {
 		spawnTimer = spawnInterval;
