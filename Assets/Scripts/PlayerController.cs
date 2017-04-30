@@ -14,6 +14,10 @@ public class PlayerController : NetworkBehaviour {
 	private float[] angles;
 	private float radius;
 
+	private const float speed = 10f;
+	private const float maxVelocity = 2f;
+	private const float rotationSpeed = 2f;
+
 	private Color[] playerColors = new Color[] {
 		new Color(0.30f, 0.63f, 0.73f),
 		new Color(0.85f, 0.63f, 0.28f),
@@ -41,6 +45,9 @@ public class PlayerController : NetworkBehaviour {
 			return;
 		}
 
+		Move();
+		Rotate();
+
 		if (Input.GetKey ("=")) {
 			CmdChangeSidesCount (sidesCount + sidesCountIncrement);
 		}
@@ -48,11 +55,11 @@ public class PlayerController : NetworkBehaviour {
 			CmdChangeSidesCount (sidesCount - sidesCountIncrement);
 		}
 
-		var x = Input.GetAxis ("Horizontal") * Time.deltaTime * 150f;
-		var y = Input.GetAxis ("Vertical") * Time.deltaTime * 3f;
-
-		transform.Rotate (0, 0, -x);
-		transform.Translate (0, y, 0);
+//		var x = Input.GetAxis ("Horizontal") * Time.deltaTime * 150f;
+//		var y = Input.GetAxis ("Vertical") * Time.deltaTime * 3f;
+//
+//		transform.Rotate (0, 0, -x);
+//		transform.Translate (0, y, 0);
 	}
 
 	public override void OnStartLocalPlayer ()
@@ -67,6 +74,44 @@ public class PlayerController : NetworkBehaviour {
 			SetColor (playerNumber);
 			SetSidesCount(sidesCount);
 		}
+	}
+
+	// Movement
+
+	void Move ()
+	{
+		Rigidbody2D rigidbody = gameObject.GetComponent<Rigidbody2D> ();
+		var moveOffset = Vector2.zero;
+
+		if (moveOffset == Vector2.zero) {
+			moveOffset = new Vector2 (Input.GetAxis("Horizontal"), Input.GetAxis("Vertical"));
+		}
+
+		// add force to poly
+		if (moveOffset != Vector2.zero) {
+			rigidbody.AddForce (moveOffset * speed);
+		}
+
+		// limit velocity
+		rigidbody.velocity = Vector2.ClampMagnitude(rigidbody.velocity, maxVelocity);
+	}
+
+	void Rotate ()
+	{
+		Rigidbody2D rigidbody = gameObject.GetComponent<Rigidbody2D> ();
+		var rotateOffset = Vector2.zero;
+
+		if (rotateOffset == Vector2.zero) {
+			rotateOffset = new Vector2 (0, Input.GetAxis("Rotation"));
+		}
+
+		if (rotateOffset != Vector2.zero) {
+//			transform.rotation = Quaternion.Lerp(transform.rotation, Quaternion.Euler(new Vector3 (0, 0, leftOffset.y * 20f)), rotationSpeed * Time.deltaTime);
+			rigidbody.AddTorque(rotateOffset.y * rotationSpeed);
+		}
+
+		// limit angularVelocity
+//		rigidbody.angularVelocity = Vector2.ClampMagnitude(rigidbody.angularVelocity, maxAngularVelocity);
 	}
 
 	// Networking ***********
@@ -129,7 +174,7 @@ public class PlayerController : NetworkBehaviour {
 
 		sidesCount = newValue;
 		UpdateRendering();
-//		gameObject.GetComponent<CircleCollider2D>().radius = radius + 0.75f;
+		gameObject.GetComponent<CircleCollider2D>().radius = radius + 0.75f;
 	}
 
 	// Update mesh and polygon collider
@@ -289,6 +334,23 @@ public class PlayerController : NetworkBehaviour {
 //		print(ArrayToString(angles) + "growAngle:" + growAngle.ToString("0"));
 
 		return angles;
+	}
+
+	void OnTriggerEnter2D (Collider2D other) {
+		if (other.CompareTag("Collectable")) {
+			other.gameObject.GetComponent<SegmentController>().StartTracking(gameObject.transform);
+		}
+	}
+
+	void OnCollisionEnter2D (Collision2D coll) {
+		if (coll.gameObject.CompareTag("Collectable")) {
+			GameObject.Find("Segment Spawner").GetComponent<SegmentSpawner>().CmdCollectSegment(coll.gameObject);
+			Collect(0.2f );
+		}
+	}
+
+	void Collect (float sidesIncrement) {
+		CmdChangeSidesCount (sidesCount + sidesIncrement);
 	}
 
 	// HELPERS ******************************************8
