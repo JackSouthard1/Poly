@@ -30,7 +30,7 @@ public class PlayerController : NetworkBehaviour {
 	[SyncVar(hook="SetSidesCount")]
 	private float sidesCount;
 
-	void Start ()
+	void Awake ()
 	{
 		SetupRendering();
 	}
