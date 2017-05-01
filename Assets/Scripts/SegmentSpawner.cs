@@ -40,6 +40,7 @@ public class SegmentSpawner : NetworkBehaviour {
 			}
 		}
 	}
+
 	[Command]
 	public void CmdCollectSegment (GameObject segment)
 	{

@@ -5,6 +5,7 @@ using UnityEngine;
 public class SideController : MonoBehaviour {
 
 	public int index;
+	public int attachedPartID = -1;
 
 	void OnCollisionEnter2D (Collision2D coll)
 	{
@@ -14,6 +15,6 @@ public class SideController : MonoBehaviour {
 	}
 
 	public bool HasPartAttached () {
-		return ( transform.childCount > 0 );
+		return (transform.childCount > 0);
 	}
 }
