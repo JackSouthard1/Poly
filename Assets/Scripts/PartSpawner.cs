@@ -35,7 +35,7 @@ public class PartSpawner : NetworkBehaviour {
 		if (isServer) {
 			if (partCount < partCountMax) {
 				var part = Instantiate (floatingPartPrefab, Vector3.zero, Quaternion.identity) as GameObject;
-				part.GetComponent<FloatingPartController> ().displayingPartIndex = 0;
+				part.GetComponent<FloatingPartController> ().displayingPartIndex = Random.Range(0,2);
 				partCount++;
 
 				NetworkServer.Spawn (part);
