@@ -378,8 +378,9 @@ public class PlayerController : NetworkBehaviour {
 	[Command]
 	void CmdPartHitSide (int partID, int sideIndex)
 	{
-		AttachPartToSide(partID, sideIndex);
 		sidesGOArray[sideIndex].GetComponent<SideController>().partID = partID;
+		AttachPartToSide(partID, sideIndex);
+
 		RpcAttachPartToSide (partID, sideIndex);
 	}
 
@@ -387,6 +388,7 @@ public class PlayerController : NetworkBehaviour {
 	void RpcAttachPartToSide (int partID, int sideIndex)
 	{
 		AttachPartToSide(partID, sideIndex);
+		CmdUpdatePartData ();
 	}
 
 	void AttachPartToSide (int partID, int sideIndex)
@@ -397,8 +399,6 @@ public class PlayerController : NetworkBehaviour {
 			GameObject partGO = (GameObject)Instantiate (partPrefab, Vector3.zero, Quaternion.identity, sidesGOArray [sideIndex].transform);
 			partGO.transform.localPosition = Vector3.zero;
 			partGO.transform.localRotation = Quaternion.identity;
-
-			CmdUpdatePartData ();
 		}
 	}
 
@@ -451,7 +451,7 @@ public class PlayerController : NetworkBehaviour {
 
 			if (side.GetComponent<SideController> ().partID > -1) {
 				if (side.transform.childCount == 0) {
-					print ("Adding missing side");
+					print ("Adding missing part");
 					AttachPartToSide(side.GetComponent<SideController>().partID, i);
 				}
 			}
