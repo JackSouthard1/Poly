@@ -440,7 +440,6 @@ public class PlayerController : NetworkBehaviour {
 			sidesGOArray[i].GetComponent<SideController>().partID = newPartID;
 		}
 
-		print("Updating Part IDs");
 		AddMissingParts();
 	}
 
@@ -451,7 +450,6 @@ public class PlayerController : NetworkBehaviour {
 
 			if (side.GetComponent<SideController> ().partID > -1) {
 				if (side.transform.childCount == 0) {
-					print ("Adding missing part");
 					AttachPartToSide(side.GetComponent<SideController>().partID, i);
 				}
 			}
