@@ -45,6 +45,13 @@ public class PlayerController : NetworkBehaviour {
 		SetupRendering();
 	}
 
+	void Start ()
+	{
+		if (!isLocalPlayer) {
+			attemptingMovement = true;
+		}
+	}
+
 	void Update ()
 	{
 		if (!isLocalPlayer) {
@@ -114,9 +121,6 @@ public class PlayerController : NetworkBehaviour {
 //			transform.rotation = Quaternion.Lerp(transform.rotation, Quaternion.Euler(new Vector3 (0, 0, leftOffset.y * 20f)), rotationSpeed * Time.deltaTime);
 			rigidbody.AddTorque(rotateOffset.y * rotationSpeed);
 		}
-
-		// limit angularVelocity
-//		rigidbody.angularVelocity = Vector2.ClampMagnitude(rigidbody.angularVelocity, maxAngularVelocity);
 	}
 
 	// Networking ***********
