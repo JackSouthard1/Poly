@@ -4,28 +4,30 @@ using UnityEngine;
 
 public class EnginePart : AttachedPart {
 
-	private float thrust;
-	private float angleMax = 30f;
-	private bool powered = false;
+	private float movementMultiplierBonus = 0.6f;
+	private float angleMax = 45f;
+	public bool powered = false;
 	private ParticleSystem ps;
 	private float goalEmissionRate = 5f;
 	private Rigidbody2D playerRB;
+	private PlayerController pc;
 
 	void Start () {
 		playerRB = transform.parent.parent.parent.GetComponent<Rigidbody2D>();
+		pc = transform.parent.parent.parent.GetComponent<PlayerController>();
 		ps = transform.GetChild(0).GetComponent<ParticleSystem>();
-
-		TurnOn();
 	}
 
 	void Update ()
 	{
-		if (ShouldThrust()) {
+		if (ShouldThrust ()) {
 			if (!powered) {
-				TurnOn();
+				TurnOn ();
+				pc.thrusterMulitplier += movementMultiplierBonus;
 			}
 		} else if (powered) {
-			TurnOff();
+			TurnOff ();
+			pc.thrusterMulitplier -= movementMultiplierBonus;
 		}
 	}
 
@@ -41,14 +43,16 @@ public class EnginePart : AttachedPart {
 
 	bool ShouldThrust ()
 	{
+		if (!pc.attemptingMovement) {
+			return false;
+		} 
+
 		Vector2 playerVelocity = playerRB.velocity;
 		Quaternion thrusterWorldRotation = transform.rotation;
 
 		float thrusterRoationAngle360 = thrusterWorldRotation.eulerAngles.z;
 		float thrusterRotationAngle = GetRotationFrom360Angle(thrusterRoationAngle360);
 		float playerRotationAngle = Mathf.Atan2 (playerVelocity.y, playerVelocity.x) * Mathf.Rad2Deg;
-
-		print ("Player Angle: " + playerRotationAngle + " Thruster Angle: " + thrusterRotationAngle);
 
 		if (Mathf.Abs (Mathf.Abs(thrusterRotationAngle) - Mathf.Abs(playerRotationAngle)) <= angleMax) {
 			return true;

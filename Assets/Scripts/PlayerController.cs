@@ -18,6 +18,8 @@ public class PlayerController : NetworkBehaviour {
 
 	private const char noPart = '-';
 
+	public float thrusterMulitplier = 1;
+	public bool attemptingMovement = false;
 	private const float speed = 10f;
 	private const float maxVelocity = 2f;
 	private const float rotationSpeed = 2f;
@@ -58,12 +60,6 @@ public class PlayerController : NetworkBehaviour {
 		if (Input.GetKey ("-")) {
 			CmdChangeSidesCount (sidesCount - sidesCountIncrement);
 		}
-
-//		var x = Input.GetAxis ("Horizontal") * Time.deltaTime * 150f;
-//		var y = Input.GetAxis ("Vertical") * Time.deltaTime * 3f;
-//
-//		transform.Rotate (0, 0, -x);
-//		transform.Translate (0, y, 0);
 	}
 
 	public override void OnStartLocalPlayer ()
@@ -90,16 +86,19 @@ public class PlayerController : NetworkBehaviour {
 		var moveOffset = Vector2.zero;
 
 		if (moveOffset == Vector2.zero) {
-			moveOffset = new Vector2 (Input.GetAxis("Horizontal"), Input.GetAxis("Vertical"));
+			moveOffset = new Vector2 (Input.GetAxis ("Horizontal"), Input.GetAxis ("Vertical"));
 		}
 
 		// add force to poly
 		if (moveOffset != Vector2.zero) {
-			rigidbody.AddForce (moveOffset * speed);
+			attemptingMovement = true;
+			rigidbody.AddForce (moveOffset * speed * thrusterMulitplier);
+		} else {
+			attemptingMovement = false;
 		}
 
 		// limit velocity
-		rigidbody.velocity = Vector2.ClampMagnitude(rigidbody.velocity, maxVelocity);
+		rigidbody.velocity = Vector2.ClampMagnitude(rigidbody.velocity, maxVelocity * thrusterMulitplier);
 	}
 
 	void Rotate ()
