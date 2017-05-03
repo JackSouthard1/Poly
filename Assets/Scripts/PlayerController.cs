@@ -7,12 +7,16 @@ public class PlayerController : NetworkBehaviour {
 
 	[SyncVar]
 	public int playerNumber;
+	[SyncVar(hook="UpdatePartIDs")]
+	public string serlizedPartInfo;
 
 	private float sidesCountMin = 2.0f;
 	private int sidesCountMax = 12;
 	private float sidesCountIncrement = 0.05f;
 	private float[] angles;
 	private float radius;
+
+	private const char noPart = '-';
 
 	private const float speed = 10f;
 	private const float maxVelocity = 2f;
@@ -73,6 +77,8 @@ public class PlayerController : NetworkBehaviour {
 		if (!isLocalPlayer) {
 			SetColor (playerNumber);
 			SetSidesCount(sidesCount);
+			CmdUpdatePartData();
+			UpdatePartIDs(serlizedPartInfo);
 		}
 	}
 
@@ -362,9 +368,10 @@ public class PlayerController : NetworkBehaviour {
 			int partID = part.GetComponent<FloatingPartController> ().GetPartIndex ();
 			int sideIndex = side.GetComponent<SideController> ().index;
 
-			CmdPartCollected(part);
-
-			CmdPartHitSide (partID, sideIndex);
+			if (sidesGOArray [sideIndex].transform.childCount == 0) {
+				CmdPartCollected (part);
+				CmdPartHitSide (partID, sideIndex);
+			}
 		}
 	}
 
@@ -372,6 +379,7 @@ public class PlayerController : NetworkBehaviour {
 	void CmdPartHitSide (int partID, int sideIndex)
 	{
 		AttachPartToSide(partID, sideIndex);
+		sidesGOArray[sideIndex].GetComponent<SideController>().partID = partID;
 		RpcAttachPartToSide (partID, sideIndex);
 	}
 
@@ -383,16 +391,76 @@ public class PlayerController : NetworkBehaviour {
 
 	void AttachPartToSide (int partID, int sideIndex)
 	{
-		GameObject partPrefab =	GameObject.Find("Part Spawner").GetComponent<PartSpawner>().GetPartPrefabFromID(partID);
-		GameObject partGO = (GameObject)Instantiate(partPrefab, Vector3.zero, Quaternion.identity, sidesGOArray[sideIndex].transform);
-		partGO.transform.localPosition = Vector3.zero;
-		partGO.transform.localRotation = Quaternion.identity;
+		if (sidesGOArray [sideIndex].transform.childCount == 0) {
+
+			GameObject partPrefab =	GameObject.Find ("Part Spawner").GetComponent<PartSpawner> ().GetPartPrefabFromID (partID);
+			GameObject partGO = (GameObject)Instantiate (partPrefab, Vector3.zero, Quaternion.identity, sidesGOArray [sideIndex].transform);
+			partGO.transform.localPosition = Vector3.zero;
+			partGO.transform.localRotation = Quaternion.identity;
+
+			CmdUpdatePartData ();
+		}
+	}
+
+	[Command]
+	public void CmdUpdatePartData ()
+	{
+		string partData = "";
+		for (int i = 0; i < sidesCountMax; i++) {
+			int partID = sidesGOArray [i].GetComponent<SideController> ().partID;
+			string partString = partID.ToString ();
+
+//			print(partID);
+
+			if (partID == -1) {
+				partData += noPart;
+			} else {
+				partData += partString;
+			}
+		}
+//		print(partData);
+
+		serlizedPartInfo = partData;
+	}
+
+	void UpdatePartIDs (string serlizedInfo)
+	{
+		for (int i = 0; i < serlizedInfo.Length; i++) {
+			int newPartID;
+			char character = serlizedInfo [i];
+
+			if (character == noPart) {
+//				print("No Part");
+				newPartID = -1;
+			} else {
+				newPartID = (int)char.GetNumericValue(character);
+//				print("Selecting character: " + character);
+			}
+
+			sidesGOArray[i].GetComponent<SideController>().partID = newPartID;
+		}
+
+		print("Updating Part IDs");
+		AddMissingParts();
+	}
+
+	void AddMissingParts ()
+	{
+		for (int i = 0; i < sidesGOArray.Length; i++) {
+			GameObject side = sidesGOArray [i];
+
+			if (side.GetComponent<SideController> ().partID > -1) {
+				if (side.transform.childCount == 0) {
+					print ("Adding missing side");
+					AttachPartToSide(side.GetComponent<SideController>().partID, i);
+				}
+			}
+		}
 	}
 
 	[Command]
 	public void CmdPartCollected (GameObject part)
 	{
-//		GameObject part = NetworkServer.FindLocalObject (partNetID);
 		NetworkServer.Destroy (part);
 	}
 

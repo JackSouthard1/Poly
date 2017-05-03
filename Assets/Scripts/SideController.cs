@@ -5,7 +5,7 @@ using UnityEngine;
 public class SideController : MonoBehaviour {
 
 	public int index;
-	public int attachedPartID = -1;
+	public int partID = -1;
 
 	void OnCollisionEnter2D (Collision2D coll)
 	{
