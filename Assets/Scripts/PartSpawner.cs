@@ -5,41 +5,48 @@ public class PartSpawner : NetworkBehaviour {
 
 	public GameObject floatingPartPrefab;
 
-	// list of all avaiable attached part prefabs
 	public GameObject[] attachedPartsList;
 
 	private float spawnTimer;
 	private float spawnInterval = 2f;
 	private int partCount = 0;
-	private int partCountMax = 500;
+	private int partCountMax = 20;
 
-	void Start () {
+	void Start ()
+	{
 		spawnTimer = spawnInterval;
+		if (isServer) {
+			CmdSpawnParts(partCountMax);
+		}
 	}
 	
 	void Update ()
 	{
 		if (isServer) {
-			if (spawnTimer <= 0f) {
-				spawnTimer = spawnInterval;
-				CmdSpawnSegment ();
-			} else {
-				spawnTimer -= Time.deltaTime;
+			if (partCount < partCountMax) {
+				if (spawnTimer <= 0f) {
+					spawnTimer = spawnInterval;
+					CmdSpawnParts (1);
+				} else {
+					spawnTimer -= Time.deltaTime;
+				}
 			}
 		}
 	}
 
 	[Command]
-	public void CmdSpawnSegment ()
+	public void CmdSpawnParts (int count)
 	{
-		if (isServer) {
-			if (partCount < partCountMax) {
-				var part = Instantiate (floatingPartPrefab, Vector3.zero, Quaternion.identity) as GameObject;
-				part.GetComponent<FloatingPartController> ().displayingPartIndex = Random.Range(0,2);
-				partCount++;
+		float halfSafeSize = WallsController.safeSpawnDistance/2;
 
-				NetworkServer.Spawn (part);
-			}
+		for (int i = 0; i < count; i++) {
+			Vector3 spawnPos = new Vector3 (Random.Range(-halfSafeSize, halfSafeSize), Random.Range(-halfSafeSize, halfSafeSize));
+			Quaternion spawnRot = Quaternion.Euler(0, 0, Random.Range(0, 360));
+			var part = Instantiate (floatingPartPrefab, spawnPos, spawnRot) as GameObject;
+			part.GetComponent<FloatingPartController> ().displayingPartIndex = Random.Range(0,2);
+			partCount++;
+
+			NetworkServer.Spawn (part);
 		}
 	}
 

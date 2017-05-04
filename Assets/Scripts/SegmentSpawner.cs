@@ -4,40 +4,50 @@ using UnityEngine;
 public class SegmentSpawner : NetworkBehaviour {
 
 	public GameObject segmentPrefab;
-//	private GameObject segments;
 
 	private float spawnTimer;
 	private float spawnInterval = 1f;
 	private int segmentCount = 0;
 	private int segmentCountMax = 100;
-	// Use this for initialization
-	void Start () {
+
+	void Start ()
+	{
 		spawnTimer = spawnInterval;
-//		segments = GameObject.Find("Segments");
+		if (isServer) {
+			CmdSpawnSegments(segmentCountMax);
+		}
 	}
-	
-	// Update is called once per frame
+
 	void Update ()
 	{
 		if (isServer) {
-			if (spawnTimer <= 0f) {
-				spawnTimer = spawnInterval;
-				SpawnSegment ();
-			} else {
-				spawnTimer -= Time.deltaTime;
+			if (segmentCount < segmentCountMax) {
+
+				if (spawnTimer <= 0f) {
+					spawnTimer = spawnInterval;
+					CmdSpawnSegments (1);
+				} else {
+					spawnTimer -= Time.deltaTime;
+				}
 			}
 		}
 	}
-	void SpawnSegment ()
-	{
-		if (isServer) {
-			if (segmentCount < segmentCountMax) {
-				var segment = Instantiate (segmentPrefab, Vector3.zero, Quaternion.identity) as GameObject;
-//				segment.transform.parent = this.gameObject.transform;
-				segmentCount++;
 
-				NetworkServer.Spawn (segment);
-			}
+	[Command]
+	public void CmdSpawnSegments (int count)
+	{
+		if (!isServer) {
+			return;
+		}
+		float halfSafeSize = WallsController.safeSpawnDistance/2;
+
+		for (int i = 0; i < count; i++) {
+			Vector3 spawnPos = new Vector3 (Random.Range(-halfSafeSize, halfSafeSize), Random.Range(-halfSafeSize, halfSafeSize));
+			Quaternion spawnRot = Quaternion.Euler(0, 0, Random.Range(0, 360));
+			var segment = Instantiate (segmentPrefab, spawnPos, spawnRot) as GameObject;
+			segmentCount++;
+
+			NetworkServer.Spawn (segment);
 		}
 	}
 

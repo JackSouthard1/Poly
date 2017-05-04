@@ -4,8 +4,9 @@ using UnityEngine;
 
 public class WallsController : MonoBehaviour {
 
-	public int mapSize;
-	private float wallThickness = 0.1f;
+	public static int mapSize = 50;
+	private static float wallThickness = 0.1f;
+	public static float safeSpawnDistance = mapSize - (wallThickness * 5);
 
 	public GameObject top;
 	public GameObject right;

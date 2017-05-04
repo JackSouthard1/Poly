@@ -356,7 +356,7 @@ public class PlayerController : NetworkBehaviour {
 	void OnCollisionEnter2D (Collision2D coll) {
 		if (coll.gameObject.CompareTag("Collectable")) {
 			GameObject.Find("Segment Spawner").GetComponent<SegmentSpawner>().CmdCollectSegment(coll.gameObject);
-			Collect(0.2f );
+			Collect(0.05f );
 		}
 	}
 
