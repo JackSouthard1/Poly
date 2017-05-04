@@ -73,6 +73,7 @@ public class PlayerController : NetworkBehaviour {
 	{
 		CmdRequestPlayerNumber();
 		CmdChangeSidesCount(2.2f);
+		GameObject.Find("Main Camera").GetComponent<CameraFollow>().SetTarget(transform);
 	}
 
 	public override void OnStartClient ()
