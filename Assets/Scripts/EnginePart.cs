@@ -51,22 +51,31 @@ public class EnginePart : AttachedPart {
 		Quaternion thrusterWorldRotation = transform.rotation;
 
 		float thrusterRoationAngle360 = thrusterWorldRotation.eulerAngles.z;
-		float thrusterRotationAngle = GetRotationFrom360Angle(thrusterRoationAngle360);
 		float playerRotationAngle = Mathf.Atan2 (playerVelocity.y, playerVelocity.x) * Mathf.Rad2Deg;
+		float playerRotationAngle360 = Get360RotFrom180to180Angle(playerRotationAngle + 90);
 
-		if (Mathf.Abs (Mathf.Abs(thrusterRotationAngle) - Mathf.Abs(playerRotationAngle)) <= angleMax) {
+		if (Mathf.Abs (thrusterRoationAngle360 - playerRotationAngle360) <= angleMax) {
 			return true;
 		} else {
 			return false;
 		}
 	}
 
-	float GetRotationFrom360Angle (float angle360)
+//	float GetRotationFrom360Angle (float angle360)
+//	{
+//		angle360 -= 90;
+//		if (angle360 > 180) {
+//			angle360 = -(360 - angle360);
+//		}
+//		return angle360;
+//	}
+
+	float Get360RotFrom180to180Angle (float angle180)
 	{
-		angle360 -= 90;
-		if (angle360 > 180) {
-			angle360 = -(360 - angle360);
+		if (angle180 < 0) {
+			return 360 + angle180;
+		} else {
+			return angle180;
 		}
-		return angle360;
 	}
 }
