@@ -463,9 +463,18 @@ public class PlayerController : NetworkBehaviour {
 		}
 	}
 
+	public void Fire (string projectileName, Vector3 spawnPos, Quaternion spawnRot, float projectileSpeed, float projectileLifetime)
+	{
+		if (isLocalPlayer) {
+			print ("Proj: " + projectileName);
+			CmdFire (projectileName, spawnPos, spawnRot, projectileSpeed, projectileLifetime);
+		}
+	}
+
 	[Command]
-	public void CmdFire (GameObject projectilePrefab, Vector3 spawnPos, Quaternion spawnRot, float projectileSpeed, float projectileLifetime) {
-		GameObject GO = (GameObject)Instantiate(projectilePrefab, spawnPos, spawnRot);
+	private void CmdFire (string projectileName, Vector3 spawnPos, Quaternion spawnRot, float projectileSpeed, float projectileLifetime) {
+		GameObject prefab = Resources.Load(projectileName) as GameObject;
+		GameObject GO = (GameObject)Instantiate(prefab, spawnPos, spawnRot);
 		GO.GetComponent<Rigidbody2D>().velocity = GO.transform.up * projectileSpeed;
 
 		NetworkServer.Spawn(GO);

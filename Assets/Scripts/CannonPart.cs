@@ -1,14 +1,13 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Networking;
 
 public class CannonPart : AttachedPart {
 
 	private float firerate = 1f;
 	private float projectileSpeed = 4f;
 	private float projectileLifetime = 4f;
-	public GameObject cannonBall;
+	private string projectileName = "CannonBall";
 	public Transform projectileSpawn;
 	private PlayerController pc;
 
@@ -27,7 +26,6 @@ public class CannonPart : AttachedPart {
 			if (fireTimer <= 0f) {
 				fireTimer = firerate;
 				if (targetInZone) {
-					print("Local Fire");
 					Fire();
 				}
 			} else {
@@ -37,10 +35,11 @@ public class CannonPart : AttachedPart {
 	}
 
 	void Fire () {
+		print ("Cannon Fire");
 		Vector3 spawnPos = projectileSpawn.position;
 		Quaternion spawnRot = projectileSpawn.rotation;
 
-		pc.CmdFire (cannonBall, spawnPos, spawnRot, projectileSpeed, projectileLifetime);
+		pc.Fire (projectileName, spawnPos, spawnRot, projectileSpeed, projectileLifetime);
 	}
 
 	public void TargetEnterZone () {

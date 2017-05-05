@@ -2,7 +2,7 @@
 using UnityEngine;
 using UnityEngine.Networking;
 
-public class AttachedPart : NetworkBehaviour {
+public class AttachedPart : MonoBehaviour {
 	private GameObject side;
 	public float health;
 
