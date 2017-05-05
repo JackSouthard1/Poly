@@ -4,9 +4,7 @@ using UnityEngine;
 
 public class CollectZoneController : MonoBehaviour {
 
-	void OnCollisionEnter2D (Collision2D other) {
-		print("Attract");
-
+	void OnTriggerEnter2D (Collider2D other) {
 		if (other.gameObject.CompareTag("Collectable")) {
 			other.gameObject.GetComponent<SegmentController>().StartTracking(transform.parent);
 		}
