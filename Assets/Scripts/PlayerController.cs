@@ -32,6 +32,8 @@ public class PlayerController : NetworkBehaviour {
 		new Color(0.33f, 0.72f, 0.33f)
 	};
 
+	private CircleCollider2D collectZone;
+
 	// side prefabs
 	private GameObject[] sidesGOArray;
 	public GameObject sidePrefab;
@@ -43,6 +45,7 @@ public class PlayerController : NetworkBehaviour {
 	void Awake ()
 	{
 		SetupRendering();
+		collectZone = transform.FindChild("Detection Zone").GetComponent<CircleCollider2D>();
 	}
 
 	void Start ()
@@ -159,7 +162,7 @@ public class PlayerController : NetworkBehaviour {
 	{
 		MeshRenderer mr = gameObject.GetComponent<MeshRenderer> ();
 
-		gameObject.AddComponent (typeof(PolygonCollider2D));
+//		gameObject.AddComponent (typeof(PolygonCollider2D));
 
 		// setup pool of sides in the sidesContainer
 		sidesGOArray = new GameObject[sidesCountMax];
@@ -185,7 +188,7 @@ public class PlayerController : NetworkBehaviour {
 
 		sidesCount = newValue;
 		UpdateRendering();
-		gameObject.GetComponent<CircleCollider2D>().radius = radius + 0.75f;
+		collectZone.radius = radius + 0.75f;
 	}
 
 	// Update mesh and polygon collider
@@ -347,11 +350,11 @@ public class PlayerController : NetworkBehaviour {
 		return angles;
 	}
 
-	void OnTriggerEnter2D (Collider2D other) {
-		if (other.CompareTag("Collectable")) {
-			other.gameObject.GetComponent<SegmentController>().StartTracking(gameObject.transform);
-		}
-	}
+//	void OnTriggerEnter2D (Collider2D other) {
+//		if (other.CompareTag("Collectable")) {
+//			other.gameObject.GetComponent<SegmentController>().StartTracking(gameObject.transform);
+//		}
+//	}
 
 	void OnCollisionEnter2D (Collision2D coll) {
 		if (coll.gameObject.CompareTag("Collectable")) {
@@ -458,6 +461,15 @@ public class PlayerController : NetworkBehaviour {
 				}
 			}
 		}
+	}
+
+	[Command]
+	public void CmdFire (GameObject projectilePrefab, Vector3 spawnPos, Quaternion spawnRot, float projectileSpeed, float projectileLifetime) {
+		GameObject GO = (GameObject)Instantiate(projectilePrefab, spawnPos, spawnRot);
+		GO.GetComponent<Rigidbody2D>().velocity = GO.transform.up * projectileSpeed;
+
+		NetworkServer.Spawn(GO);
+		Destroy(GO, projectileLifetime);
 	}
 
 	[Command]

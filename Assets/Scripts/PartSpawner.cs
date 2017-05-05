@@ -50,15 +50,6 @@ public class PartSpawner : NetworkBehaviour {
 		}
 	}
 
-	[Command]
-	public void CmdFire (GameObject projectilePrefab, Vector3 spawnPos, Quaternion spawnRot, float projectileSpeed, float projectileLifetime) {
-		GameObject GO = (GameObject)Instantiate(projectilePrefab, spawnPos, spawnRot);
-		GO.GetComponent<Rigidbody2D>().velocity = GO.transform.up * projectileSpeed;
-
-		NetworkServer.Spawn(GO);
-		Destroy(GO, projectileLifetime);
-	}
-
 	public GameObject GetPartPrefabFromID (int partID) {
 		return attachedPartsList[partID];
 	}

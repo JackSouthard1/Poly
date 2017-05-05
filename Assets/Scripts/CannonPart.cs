@@ -6,19 +6,19 @@ using UnityEngine.Networking;
 public class CannonPart : AttachedPart {
 
 	private float firerate = 1f;
-	private float projectileSpeed = 5f;
-	private float projectileLifetime = 3f;
+	private float projectileSpeed = 4f;
+	private float projectileLifetime = 4f;
 	public GameObject cannonBall;
 	public Transform projectileSpawn;
-	private PartSpawner ps;
+	private PlayerController pc;
 
-	private bool targetInZone = true;
+	private bool targetInZone = false;
 
 	float fireTimer;
 
 	void Start () {
 		fireTimer = firerate;
-		ps = GameObject.Find("Part Spawner").GetComponent<PartSpawner>();
+		pc = transform.parent.parent.parent.GetComponent<PlayerController>();
 	}
 
 	void Update ()
@@ -27,6 +27,7 @@ public class CannonPart : AttachedPart {
 			if (fireTimer <= 0f) {
 				fireTimer = firerate;
 				if (targetInZone) {
+					print("Local Fire");
 					Fire();
 				}
 			} else {
@@ -39,7 +40,7 @@ public class CannonPart : AttachedPart {
 		Vector3 spawnPos = projectileSpawn.position;
 		Quaternion spawnRot = projectileSpawn.rotation;
 
-		ps.CmdFire (cannonBall, spawnPos, spawnRot, projectileSpeed, projectileLifetime);
+		pc.CmdFire (cannonBall, spawnPos, spawnRot, projectileSpeed, projectileLifetime);
 	}
 
 	public void TargetEnterZone () {
@@ -47,6 +48,6 @@ public class CannonPart : AttachedPart {
 	}
 
 	public void TargetExitZone () {
-//		targetInZone = false;
+		targetInZone = false;
 	}
 }
